@@ -1,87 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentiment Analysis</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --positive-color: #27ae60;
+            --negative-color: #e74c3c;
+            --light-bg: #f5f7fa;
+            --dark-text: #2c3e50;
+            --shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --card-bg: white;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            min-height: 100vh;
+        }
+
+        /* Left side - Form */
+        .form-section {
+            background: var(--primary-color);
+            padding: 2.5rem;
+            height: 100vh;
+            box-shadow: var(--shadow);
+        }
+
+        .form-section h1 {
+            color: white;
+            margin-bottom: 2rem;
             text-align: center;
-            padding: 20px;
         }
-        .container {
-            max-width: 500px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+        label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: white;
+            font-size: 1.1rem;
         }
-        h1 {
-            color: #333;
-        }
+
         textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
             resize: none;
             font-size: 16px;
+            font-family: inherit;
+            transition: box-shadow 0.3s;
+            box-sizing: border-box;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 250px;
         }
-        button {
-            background-color: #4CAF50;
-            color: white;
+
+        textarea:focus {
+            outline: none;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .submit-btn {
+            background-color: white;
+            color: var(--primary-color);
             border: none;
-            padding: 12px 20px;
-            margin-top: 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .result {
+            padding: 15px 25px;
             margin-top: 20px;
-            font-size: 22px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 18px;
             font-weight: bold;
-            padding: 10px;
-            border-radius: 5px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
         }
+
+        .submit-btn:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Result section */
+        .result-section {
+            height: 70vh;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--light-bg);
+        }
+
+        .result {
+            font-size: 2rem;
+            font-weight: 600;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+        }
+
+        .result.empty {
+            background-color: var(--card-bg);
+            color: #aaa;
+        }
+
         .positive {
-            color: #155724;
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
+            color: white;
+            background-color: var(--positive-color);
         }
+
         .negative {
-            color: #721c24;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
+            color: white;
+            background-color: var(--negative-color);
+        }
+
+        .emoji {
+            font-size: 4rem;
+        }
+
+        /* Developer info section */
+        .dev-section {
+            height: 30vh;
+            padding: 1.5rem 2rem;
+            background-color: var(--card-bg);
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .dev-section h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .dev-card {
+            padding: 1.2rem;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            height: 100%;
+        }
+
+        .dev-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dev-card h3 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .dev-role {
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+        }
+
+        .dev-info-text {
+            font-size: 0.9rem;
+            color: var(--dark-text);
+            line-height: 1.4;
         }
     </style>
 </head>
+
 <body>
-
-    <div class="container">
-        <h1>Sentiment Analysis</h1>
-        <form action="/predict" method="POST">
-            <label for="text">Write text:</label><br>
-            <textarea id="text" name="text" rows="5" placeholder="Enter your text here..."></textarea><br>
-            <button type="submit">Predict</button>
-        </form>
-
-        {% if result is not none %}
-            <div class="result {% if result == 1 %}positive{% else %}negative{% endif %}">
-                {% if result == 1 %}
-                    😊 Positive Sentiment
-                {% else %}
-                    😞 Negative Sentiment
-                {% endif %}
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left side - Form (40%) -->
+            <div class="col-lg-5 form-section d-flex flex-column">
+                <h1>Sentiment Analysis</h1>
+                <form action="/predict" method="POST" id="analysis-form" class="d-flex flex-column flex-grow-1">
+                    <label for="text">Enter your text:</label>
+                    <textarea id="text" name="text" placeholder="Type something to analyze the sentiment..."
+                        class="flex-grow-1"></textarea>
+                    <button type="submit" class="submit-btn">Analyze Sentiment</button>
+                </form>
             </div>
-        {% endif %}
+
+            <!-- Right side container (60%) -->
+            <div class="col-lg-7 d-flex flex-column">
+                <!-- Results section - 70% of right side -->
+                <div class="result-section">
+                    {% if result is not none %}
+                    <div class="result {% if result == 1 %}positive{% else %}negative{% endif %}">
+                        <span class="emoji">{% if result == 1 %}😊{% else %}😞{% endif %}</span>
+                        <span>{% if result == 1 %}Positive Sentiment{% else %}Negative Sentiment{% endif %}</span>
+                    </div>
+                    {% else %}
+                    <div class="result empty">
+                        <span class="emoji">🔍</span>
+                        <span>Submit text to see analysis results</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Developer info section - 30% of right side -->
+                <div class="dev-section">
+                    <h2>Project Developers</h2>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="dev-card">
+                                <h3>Abhishek Kumar Singh</h3>
+                                <p class="dev-info-text">MT2024006</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="dev-card">
+                                <h3>Chimay Taverej</h3>
+                                <p class="dev-info-text">MT2024162</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
