@@ -35,6 +35,8 @@ jobs:
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
+          dvc remote modify myremote access_key_id $ACCESS_KEY
+          dvc remote modify myremote secret_access_key $SECRET_KEY
           dvc repro
           dvc push
 
