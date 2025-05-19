@@ -72,3 +72,20 @@
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
     AWS_REGION: "us-east-1"
     KUBECONFIG: "/tmp/kubeconfig"
+
+- name: Check AWS CLI version
+  ansible.builtin.shell: aws --version
+  register: aws_cli_version
+
+- name: Show AWS CLI version
+  ansible.builtin.debug:
+    var: aws_cli_version.stdout
+
+- name: Show kubeconfig users section
+  ansible.builtin.shell: |
+    yq e '.users' /tmp/kubeconfig || cat /tmp/kubeconfig
+  register: kubeconfig_users
+
+- name: Debug kubeconfig users section
+  ansible.builtin.debug:
+    var: kubeconfig_users.stdout
