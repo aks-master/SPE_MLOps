@@ -11,11 +11,39 @@
 
 - name: Update kubeconfig for EKS
   ansible.builtin.shell: |
-    aws eks update-kubeconfig --region us-east-1 --name flask-app-cluster
+    aws eks update-kubeconfig --region us-east-1 --name flask-app-cluster --kubeconfig /tmp/kubeconfig
   environment:
     AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
     AWS_REGION: "us-east-1"
+    KUBECONFIG: "/tmp/kubeconfig"
+
+- name: Debug kubeconfig file
+  ansible.builtin.shell: cat /tmp/kubeconfig
+  register: kubeconfig_content
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+    AWS_REGION: "us-east-1"
+    KUBECONFIG: "/tmp/kubeconfig"
+
+- name: Show kubeconfig content
+  ansible.builtin.debug:
+    var: kubeconfig_content.stdout
+
+- name: Test kubectl connectivity
+  ansible.builtin.shell: kubectl cluster-info
+  register: kubectl_cluster_info
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+    AWS_REGION: "us-east-1"
+    KUBECONFIG: "/tmp/kubeconfig"
+  ignore_errors: true
+
+- name: Show kubectl cluster-info output
+  ansible.builtin.debug:
+    var: kubectl_cluster_info.stdout
 
 - name: Create Kubernetes Secret
   ansible.builtin.shell: |
@@ -24,6 +52,7 @@
     AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
     AWS_REGION: "us-east-1"
+    KUBECONFIG: "/tmp/kubeconfig"
 
 - name: Deploy to EKS
   ansible.builtin.shell: |
@@ -32,3 +61,4 @@
     AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
     AWS_REGION: "us-east-1"
+    KUBECONFIG: "/tmp/kubeconfig"
