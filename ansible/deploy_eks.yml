@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  gather_facts: no
+  roles:
+    - role: eks_deploy
+      vars:
+        aws_access_key_id: "{{ lookup('env', 'ACCESS_KEY') }}"
+        aws_secret_access_key: "{{ lookup('env', 'SECRET_KEY') }}"
+        capstone_test: "{{ lookup('env', 'CAPSTONE_TEST') }}"
+        deployment_yaml_path: "deployment.yaml"
