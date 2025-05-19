@@ -57,6 +57,9 @@ The `deployment.yaml` file specifies:
 *   A Kubernetes `Deployment` to manage the application pods, using the image from ECR.
 *   A Kubernetes `Service` of type `LoadBalancer` to expose the application to the internet.
 
+## Monitoring
+*   Creating prometheus and grafana servers saperately so that the kubernetes deployment perfromence is not affected.
+
 ## Project Structure Highlights
 
 *   `src/`: Contains the core Python source code for data processing, feature engineering, model training, and evaluation.
