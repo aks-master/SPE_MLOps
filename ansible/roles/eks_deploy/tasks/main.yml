@@ -1,5 +1,15 @@
 ---
 # tasks file for eks_deploy
+- name: Install AWS CLI v2
+  become: true
+  ansible.builtin.shell: |
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip -o awscliv2.zip
+    ./aws/install
+    rm -rf awscliv2.zip aws/
+  args:
+    creates: /usr/local/bin/aws
+
 - name: Install kubectl
   become: yes
   ansible.builtin.shell: |
