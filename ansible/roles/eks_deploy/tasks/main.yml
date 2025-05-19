@@ -1,91 +1,55 @@
 ---
 # tasks file for eks_deploy
-- name: Install AWS CLI v2
-  become: true
-  ansible.builtin.shell: |
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    unzip -o awscliv2.zip
-    ./aws/install
-    rm -rf awscliv2.zip aws/
-  args:
-    creates: /usr/local/bin/aws
+- name: Configure AWS credentials for Ansible
+  set_fact:
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_region: "{{ aws_region }}"
 
-- name: Install kubectl
-  become: yes
-  ansible.builtin.shell: |
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-    rm kubectl
-  args:
-    creates: /usr/local/bin/kubectl
-
-- name: Update kubeconfig for EKS
-  ansible.builtin.shell: |
-    aws eks update-kubeconfig --region us-east-1 --name flask-app-cluster --kubeconfig /tmp/kubeconfig
+- name: Update kubeconfig
+  command: "aws eks update-kubeconfig --region {{ aws_region }} --name flask-app-cluster"
   environment:
     AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
-    AWS_REGION: "us-east-1"
-    KUBECONFIG: "/tmp/kubeconfig"
+    AWS_DEFAULT_REGION: "{{ aws_region }}"
 
-- name: Debug kubeconfig file
-  ansible.builtin.shell: cat /tmp/kubeconfig
-  register: kubeconfig_content
+- name: Verify kubectl access
+  command: "kubectl get nodes"
   environment:
     AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
-    AWS_REGION: "us-east-1"
-    KUBECONFIG: "/tmp/kubeconfig"
+    AWS_DEFAULT_REGION: "{{ aws_region }}"
+  register: kubectl_get_nodes
+  changed_when: false
+  failed_when: kubectl_get_nodes.rc != 0
 
-- name: Show kubeconfig content
-  ansible.builtin.debug:
-    var: kubeconfig_content.stdout
+- name: Debug kubectl output
+  debug:
+    var: kubectl_get_nodes.stdout_lines
 
-- name: Test kubectl connectivity
-  ansible.builtin.shell: kubectl cluster-info
-  register: kubectl_cluster_info
+- name: Create Kubernetes Secret for capstone-test
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: capstone-secret
+        namespace: default
+      stringData:
+        CAPSTONE_TEST: "{{ capstone_test_secret }}"
   environment:
+    K8S_AUTH_KUBECONFIG: "{{ kubeconfig_path }}"
     AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
-    AWS_REGION: "us-east-1"
-    KUBECONFIG: "/tmp/kubeconfig"
-  ignore_errors: true
+    AWS_DEFAULT_REGION: "{{ aws_region }}"
 
-- name: Show kubectl cluster-info output
-  ansible.builtin.debug:
-    var: kubectl_cluster_info.stdout
-
-- name: Create Kubernetes Secret
-  ansible.builtin.shell: |
-    kubectl create secret generic capstone-secret --from-literal=CAPSTONE_TEST={{ capstone_test }} --dry-run=client -o yaml | kubectl apply --validate=false -f -
+- name: Deploy application from deployment.yaml
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ playbook_dir }}/../../../deployment.yaml"
   environment:
+    K8S_AUTH_KUBECONFIG: "{{ kubeconfig_path }}"
     AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
-    AWS_REGION: "us-east-1"
-    KUBECONFIG: "/tmp/kubeconfig"
-
-- name: Deploy to EKS
-  ansible.builtin.shell: |
-    kubectl apply -f {{ deployment_yaml_path }}
-  environment:
-    AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
-    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
-    AWS_REGION: "us-east-1"
-    KUBECONFIG: "/tmp/kubeconfig"
-
-- name: Check AWS CLI version
-  ansible.builtin.shell: aws --version
-  register: aws_cli_version
-
-- name: Show AWS CLI version
-  ansible.builtin.debug:
-    var: aws_cli_version.stdout
-
-- name: Show kubeconfig users section
-  ansible.builtin.shell: |
-    yq e '.users' /tmp/kubeconfig || cat /tmp/kubeconfig
-  register: kubeconfig_users
-
-- name: Debug kubeconfig users section
-  ansible.builtin.debug:
-    var: kubeconfig_users.stdout
+    AWS_DEFAULT_REGION: "{{ aws_region }}"

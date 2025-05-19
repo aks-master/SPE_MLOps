@@ -86,40 +86,17 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
 
-      - name: Set Up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: "latest"
-
-      - name: Update kubeconfig
+      - name: Set up Ansible
         run: |
-          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name flask-app-cluster
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_R }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY_R }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          python -m pip install ansible
+          ansible-galaxy collection install -r ansible/requirements.yml
 
-      - name: Verify kubectl access
-        run: |
-          kubectl get nodes
+      - name: Run Ansible Playbook for EKS Deployment
+        run: ansible-playbook ansible/playbook.yml
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_R }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY_R }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Create Kubernetes Secret
-        run: |
-          kubectl create secret generic capstone-secret \
-            --from-literal=CAPSTONE_TEST=${{ secrets.CAPSTONE_TEST }} --dry-run=client -o yaml | kubectl apply -f -
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_R }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY_R }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Deploy to EKS
-        run: |
-          kubectl apply -f deployment.yaml
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_R }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY_R }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ACCESS_KEY_R: ${{ secrets.ACCESS_KEY_R }}
+          SECRET_KEY_R: ${{ secrets.SECRET_KEY_R }}
+          CAPSTONE_TEST: ${{ secrets.CAPSTONE_TEST }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
