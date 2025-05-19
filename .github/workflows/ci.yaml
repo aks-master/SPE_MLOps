@@ -32,11 +32,11 @@ jobs:
         env:
           CAPSTONE_TEST: ${{ secrets.CAPSTONE_TEST }}
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
+          ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
-          dvc remote modify myremote access_key_id $AWS_ACCESS_KEY_ID
-          dvc remote modify myremote secret_access_key $AWS_SECRET_ACCESS_KEY
+          dvc remote modify myremote access_key_id $ACCESS_KEY
+          dvc remote modify myremote secret_access_key $SECRET_KEY
           dvc repro
           dvc push
 
@@ -56,8 +56,7 @@ jobs:
         if: success()
         env:
           CAPSTONE_TEST: ${{ secrets.CAPSTONE_TEST }}
-        run: |
-          python -m unittest tests/test_flask_app.py
+        run: python -m unittest tests/test_flask_app.py
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -65,14 +64,6 @@ jobs:
           aws-access-key-id: ${{ secrets.ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.SECRET_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Verify AWS Identity
-        run: |
-          aws sts get-caller-identity
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Login to AWS ECR
         if: success()
@@ -98,19 +89,11 @@ jobs:
       - name: Set Up kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: 'latest'
+          version: "latest"
 
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name flask-app-cluster
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Debug kubeconfig
-        run: |
-          cat ~/.kube/config
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
