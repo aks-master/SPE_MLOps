@@ -58,13 +58,6 @@ jobs:
           CAPSTONE_TEST: ${{ secrets.CAPSTONE_TEST }}
         run: python -m unittest tests/test_flask_app.py
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.SECRET_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Login to AWS ECR
         if: success()
         run: |
@@ -95,16 +88,16 @@ jobs:
         run: |
           aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name flask-app-cluster
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_R }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY_R }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Verify kubectl access
         run: |
           kubectl get nodes
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_R }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY_R }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Create Kubernetes Secret
@@ -112,14 +105,14 @@ jobs:
           kubectl create secret generic capstone-secret \
             --from-literal=CAPSTONE_TEST=${{ secrets.CAPSTONE_TEST }} --dry-run=client -o yaml | kubectl apply -f -
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_R }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY_R }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Deploy to EKS
         run: |
           kubectl apply -f deployment.yaml
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_R }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY_R }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
