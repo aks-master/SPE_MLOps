@@ -47,7 +47,7 @@
 - name: Deploy application from deployment.yaml
   kubernetes.core.k8s:
     state: present
-    src: "{{ playbook_dir }}/../../../deployment.yaml"
+    src: "{{ playbook_dir }}/../deployment.yaml"
   environment:
     K8S_AUTH_KUBECONFIG: "{{ kubeconfig_path }}"
     AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
