@@ -58,6 +58,13 @@ jobs:
           CAPSTONE_TEST: ${{ secrets.CAPSTONE_TEST }}
         run: python -m unittest tests/test_flask_app.py
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY_R }}
+          aws-secret-access-key: ${{ secrets.SECRET_KEY_R }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Login to AWS ECR
         if: success()
         run: |
