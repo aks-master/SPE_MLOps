@@ -7,7 +7,7 @@
     aws_region: "{{ aws_region }}"
 
 - name: Update kubeconfig
-  command: "aws eks update-kubeconfig --region {{ aws_region }} --name flask-app-cluster"
+  command: "aws eks update-kubeconfig --region {{ aws_region }} --name flask-app-cluster2"
   environment:
     AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
